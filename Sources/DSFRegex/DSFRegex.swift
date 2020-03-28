@@ -42,7 +42,7 @@ public class DSFRegex {
 		_regex = try NSRegularExpression(pattern: pattern, options: options)
 	}
 
-	/// Returns true if the input text contains a match for the pattern, false otherwise
+	/// Return true if the input text contains a match for the pattern, false otherwise
 	/// - Parameters:
 	///   - text: The input text to be searched
 	///   - options: The regex options to use when matching
@@ -55,7 +55,7 @@ public class DSFRegex {
 		_regex.firstMatch(in: text, options: options, range: NSRange(text.startIndex..., in: text)) != nil
 	}
 
-	/// Returns all the match information that can be found abou
+	/// Return all the match information
 	/// - Parameters:
 	///   - text: The input text to be searched
 	///   - options: The regex options to use when matching
@@ -70,8 +70,10 @@ public class DSFRegex {
 		let res = results.map { Match(result: $0, in: text) }
 		return Matches(text: text, pattern: _regex.pattern, match: res)
 	}
+}
 
-	/// Returns a new string containing matching regular expressions replaced with the template string.
+public extension DSFRegex {
+	/// Return a new string containing matching regular expressions replaced with the template string.
 	/// - Parameters:
 	///   - text: The string to search for values within.
 	///   - templ: The substitution template used when replacing matching instances.
@@ -83,12 +85,11 @@ public class DSFRegex {
 	/// NSRegularExpression provides a function to escape the replacement string correctly
 	///
 	/// `NSRegularExpression.escapedTemplate(for: str)`
-	public func stringByReplacingMatches(in text: String, withTemplate templ: String, range: Range<String.Index>? = nil, options: NSRegularExpression.MatchingOptions = []) -> String {
+	func stringByReplacingMatches(in text: String, withTemplate templ: String, range: Range<String.Index>? = nil, options: NSRegularExpression.MatchingOptions = []) -> String {
 		let replaceRange: NSRange
 		if let r = range {
 			replaceRange = NSRange(r, in: text)
-		}
-		else {
+		} else {
 			replaceRange = NSRange(text.startIndex..., in: text)
 		}
 
@@ -96,22 +97,21 @@ public class DSFRegex {
 			in: text,
 			options: options,
 			range: replaceRange,
-			withTemplate: templ)
+			withTemplate: templ
+		)
 	}
-
 }
 
 // MARK: - Matches
 
 public extension DSFRegex {
-
 	/// Structure storing the results of a regex match on a string
 	struct Matches {
 		/// The text used when creating the matches
 		let text: String
 
 		/// A range that represents the entire range for the input search text
-		var textRange: Range<String.Index> { return text.startIndex..<text.endIndex }
+		var textRange: Range<String.Index> { return text.startIndex ..< text.endIndex }
 
 		/// The regex pattern that was used to create the match result
 		let pattern: String
@@ -150,7 +150,7 @@ public extension DSFRegex.Matches {
 		return String(self.text[match.range])
 	}
 
-	/// Returns the text captured for the specified capture
+	/// Returns the text captured for a capture
 	func text(for capture: DSFRegex.Capture) -> String {
 		if capture.isEmpty { return "" }
 		return String(self.text[capture])
@@ -161,9 +161,9 @@ public extension DSFRegex.Matches {
 		return captures.map { self.text(for: $0) }
 	}
 
-	/// Returns an array of strings for each capture found for a match
-	func text(capturesIn: DSFRegex.Match) -> [String] {
-		return self.text(for: capturesIn.capture)
+	/// Returns a string array containing the values for each capture in the match
+	func text(forCapturesIn match: DSFRegex.Match) -> [String] {
+		return self.text(for: match.capture)
 	}
 }
 
@@ -171,7 +171,6 @@ public extension DSFRegex.Matches {
 
 /// Extension to allow conformance to sequence, so that you can do `for match in result { $0 ... }`
 extension DSFRegex.Matches: Sequence {
-
 	public func makeIterator() -> MatchIterator {
 		return MatchIterator(matches: self.match)
 	}
@@ -193,7 +192,6 @@ extension DSFRegex.Matches: Sequence {
 		}
 	}
 }
-
 
 // MARK: - Match
 
@@ -232,7 +230,7 @@ public extension DSFRegex {
 
 // Simple extension to provide a static 'empty' range
 
-fileprivate extension DSFRegex.Capture {
+private extension DSFRegex.Capture {
 	/// An empty capture object.
 	static var empty: Range<String.Index> = "".startIndex ..< "".endIndex
 }

@@ -49,9 +49,9 @@ final class DSFRegexTests: XCTestCase {
 			XCTAssertEqual("0491-111-444", allMatches.text(for: allMatches[1]))
 			XCTAssertEqual("4324-222-123", allMatches.text(for: allMatches[2]))
 
-			XCTAssertEqual(["0499", "999", "888"], allMatches.text(capturesIn: allMatches[0]))
-			XCTAssertEqual(["0491", "111", "444"], allMatches.text(capturesIn: allMatches[1]))
-			XCTAssertEqual(["4324", "222", "123"], allMatches.text(capturesIn: allMatches[2]))
+			XCTAssertEqual(["0499", "999", "888"], allMatches.text(forCapturesIn: allMatches[0]))
+			XCTAssertEqual(["0491", "111", "444"], allMatches.text(forCapturesIn: allMatches[1]))
+			XCTAssertEqual(["4324", "222", "123"], allMatches.text(forCapturesIn: allMatches[2]))
 
 			for match in allMatches.enumerated() {
 				let matchText = allMatches.text(for: match.element)
@@ -73,9 +73,9 @@ final class DSFRegexTests: XCTestCase {
 			XCTAssertEqual("-9.942", matchText2)
 
 			// Get the contents of the capture groups for these matches
-			let captureTexts1 = matches.text(capturesIn: matches.match[0])
+			let captureTexts1 = matches.text(forCapturesIn: matches.match[0])
 			XCTAssertEqual(["", "11", "15"], captureTexts1)
-			let captureTexts2 = matches.text(capturesIn: matches.match[1])
+			let captureTexts2 = matches.text(forCapturesIn: matches.match[1])
 			XCTAssertEqual(["-", "9", "942"], captureTexts2)
 		}
 	}
@@ -131,7 +131,7 @@ final class DSFRegexTests: XCTestCase {
 
 
 			XCTAssertEqual(4, results[0].capture.count)
-			let captures0 = results.text(capturesIn: results[0])
+			let captures0 = results.text(forCapturesIn: results[0])
 			XCTAssertEqual(["ChoccyWokky", "03", "01", "Noodles.pdf"], captures0)
 
 			XCTAssertEqual(4, results[1].capture.count)
@@ -174,6 +174,8 @@ final class DSFRegexTests: XCTestCase {
 			XCTAssertFalse(results[0].capture[0].isEmpty)
 			XCTAssertEqual("12345657", results.text(for: results[0].capture[1]))
 			XCTAssertEqual("890", results.text(for: results[0].capture[2]))
+
+			XCTAssertEqual(#"([\+-]?)(\d+)(?:\.(\d+))?"#, r.pattern)
 		}
 	}
 
@@ -277,7 +279,14 @@ final class DSFRegexTests: XCTestCase {
 	}
 
 	static var allTests = [
+		("testDocs", testDocs),
+		("testNonCapture", testNonCapture),
 		("testSimpleOne", testSimpleOne),
-		("testSimpleTwo", testSimpleTwo)
+		("testSimpleTwo", testSimpleTwo),
+		("testFractional", testFractional),
+		("testSequence", testSequence),
+		("testEmailValidation", testEmailValidation),
+		("testReplacement", testReplacement),
+		("testExactMatch", testExactMatch),
 	]
 }

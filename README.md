@@ -2,6 +2,16 @@
 
 A Swift regex class abstracting away some of the complexities of NSRegularExpression
 
+<p align="center">
+    <img src="https://img.shields.io/github/v/tag/dagronf/DSFRegex" />
+    <img src="https://img.shields.io/badge/Swift-5.0-orange.svg" />
+    <img src="https://img.shields.io/badge/License-MIT-lightgrey" />
+    <img src="https://img.shields.io/badge/pod-compatible-informational" alt="CocoaPods" />
+    <a href="https://swift.org/package-manager">
+        <img src="https://img.shields.io/badge/spm-compatible-brightgreen.svg?style=flat" alt="Swift Package Manager" />
+    </a>
+</p>
+
 ## Why
 
 Every time I have to use `NSRegularExpression` in Swift I make the same mistakes over and over regarding ranges and range conversions between `NSRange` and `Range<String.Index>`.
@@ -54,6 +64,19 @@ Match (2) -> `4324-222-123`
   Capture (0) -> `4324`
   Capture (1) -> `222`
   Capture (2) -> `123`
+```
+
+You use the `DSFRegex.Matches` object to retrieve text for each of match component. This library does not store the text in the objects themselves to reduce memory size with large datasets.
+
+```swift
+// Returns the text for the specified match
+func text(for match: DSFRegex.Match) -> String
+
+// Returns the text captured for a capture
+func text(for capture: DSFRegex.Capture) -> String
+
+// Returns a string array containing the values for each capture in the match
+func text(capturesIn: DSFRegex.Match) -> [String]
 ```
 
 ## Classes
