@@ -45,26 +45,30 @@ public class DSFRegex {
 	/// Return true if the input text contains a match for the pattern, false otherwise
 	/// - Parameters:
 	///   - text: The input text to be searched
-	///   - options: The regex options to use when matching
+	///   - range: The range of the input text to be searched (optional)
+	///   - options: The regex options to use when matching (optional)
 	/// - Returns: true if a match was found, false otherwise
 	///
 	/// This function is MUCH faster than the `matches` function as it terminates as soon as it finds a match.
 	///
 	/// If you only care about if it matches, and not _where_ it matches or capture groups, then use this
-	public func matches(in text: String, options: NSRegularExpression.MatchingOptions = []) -> Bool {
-		_regex.firstMatch(in: text, options: options, range: NSRange(text.startIndex..., in: text)) != nil
+	public func matches(in text: String, range: Range<String.Index>? = nil, options: NSRegularExpression.MatchingOptions = []) -> Bool {
+		let searchRange: Range<String.Index> = range ?? text.startIndex ..< text.endIndex
+		return _regex.firstMatch(in: text, options: options, range: NSRange(searchRange, in: text)) != nil
 	}
 
 	/// Return all the match information
 	/// - Parameters:
 	///   - text: The input text to be searched
-	///   - options: The regex options to use when matching
+	///   - range: The range of the input text to be searched (optional)
+	///   - options: The regex options to use when matching (optional)
 	/// - Returns: a structure containing all of the matches and capture groups for those matches
-	public func allMatches(in text: String, options: NSRegularExpression.MatchingOptions = []) -> Matches {
+	public func allMatches(in text: String, range: Range<String.Index>? = nil,  options: NSRegularExpression.MatchingOptions = []) -> Matches {
+		let searchRange: Range<String.Index> = range ?? text.startIndex ..< text.endIndex
 		let results = _regex.matches(
 			in: text,
 			options: options,
-			range: NSRange(text.startIndex..., in: text)
+			range: NSRange(searchRange, in: text)
 		)
 
 		let res = results.map { Match(result: $0, in: text) }

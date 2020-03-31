@@ -278,6 +278,27 @@ final class DSFRegexTests: XCTestCase {
 		}
 	}
 
+	func testSearchInRange() {
+		performTest {
+			let inputString = "This is a test.\n noodles@compuserve4.nginix.com and sillytest32@gmail.com lives here"
+
+			let matches = EmailRegex.allMatches(in: inputString)
+			XCTAssertEqual(2, matches.numberOfMatches)
+
+			XCTAssertTrue(EmailRegex.matches(in: inputString))
+
+			let noMatchRange = inputString.startIndex ..< inputString.index(inputString.startIndex, offsetBy: 30)
+			XCTAssertFalse(EmailRegex.matches(in: inputString, range: noMatchRange))
+
+			let range2Matches = EmailRegex.allMatches(in: inputString, range: noMatchRange)
+			XCTAssertEqual(0, range2Matches.numberOfMatches)
+
+			let firstCheckRange = inputString.startIndex ..< inputString.index(inputString.startIndex, offsetBy: 52)
+			let range1Matches = EmailRegex.allMatches(in: inputString, range: firstCheckRange)
+			XCTAssertEqual(1, range1Matches.numberOfMatches)
+		}
+	}
+
 	static var allTests = [
 		("testDocs", testDocs),
 		("testNonCapture", testNonCapture),
@@ -288,5 +309,6 @@ final class DSFRegexTests: XCTestCase {
 		("testEmailValidation", testEmailValidation),
 		("testReplacement", testReplacement),
 		("testExactMatch", testExactMatch),
+		("testSearchInRange", testSearchInRange)
 	]
 }
