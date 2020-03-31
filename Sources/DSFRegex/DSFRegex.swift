@@ -198,10 +198,10 @@ extension DSFRegex.Matches: Sequence {
 public extension DSFRegex {
 	struct Match {
 		/// The match range within the search text.
-		let range: Range<String.Index>
+		public let range: Range<String.Index>
 
 		/// The captures that were found as part of the search
-		let capture: [Capture]
+		public let capture: [Capture]
 
 		init(result: NSTextCheckingResult, in text: String) {
 			let matchRange = result.range(at: 0)
