@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DSFRegex"
-  s.version      = "1.1"
+  s.version      = "1.4"
   s.summary      = "A Swift based Regex class"
   s.description  = <<-DESC
     A Swift based Regex class
