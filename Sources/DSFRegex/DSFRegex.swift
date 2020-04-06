@@ -59,24 +59,10 @@ public class DSFRegex {
 	/// This function is MUCH faster than the `matches` function as it terminates as soon as it finds a match.
 	///
 	/// If you only care about if it matches, and not _where_ it matches or capture groups, then use this
-	public func matches(in text: String, range: Range<String.Index>? = nil, options: NSRegularExpression.MatchingOptions = []) -> Bool {
+	public func hasMatch(_ text: String, range: Range<String.Index>? = nil, options: NSRegularExpression.MatchingOptions = []) -> Bool {
 		let searchRange: Range<String.Index> = range ?? (text.startIndex ..< text.endIndex)
 		let nsRange = NSRange(searchRange, in: text)
 		return _regex.firstMatch(in: text, options: options, range: nsRange) != nil
-	}
-
-	/// Return all the match information
-	/// - Parameters:
-	///   - text: The input text to be searched
-	///   - range: The range of the input text to be searched (optional)
-	///   - options: The regex options to use when matching (optional)
-	/// - Returns: a structure containing all of the matches and capture groups for those matches
-	public func allMatches(in text: String, range: Range<String.Index>? = nil, options: NSRegularExpression.MatchingOptions = []) -> Matches {
-		let searchRange: Range<String.Index> = range ?? (text.startIndex ..< text.endIndex)
-		let nsRange = NSRange(searchRange, in: text)
-		let results = _regex.matches(in: text, options: options, range: nsRange)
-		let res = results.compactMap { try? Match(result: $0, in: text) }
-		return Matches(text: text, pattern: _regex.pattern, match: res)
 	}
 
 	/// Return the first match within a given string, or nil if no match was found
@@ -94,7 +80,21 @@ public class DSFRegex {
 		return try? Match(result: match, in: text)
 	}
 
-	/// Enumerate through the matches in the provided text
+	/// Return all match information
+	/// - Parameters:
+	///   - text: The input text to be searched
+	///   - range: The range of the input text to be searched (optional)
+	///   - options: The regex options to use when matching (optional)
+	/// - Returns: a structure containing all of the matches and capture groups for those matches
+	public func matches(for text: String, range: Range<String.Index>? = nil, options: NSRegularExpression.MatchingOptions = []) -> Matches {
+		let searchRange: Range<String.Index> = range ?? (text.startIndex ..< text.endIndex)
+		let nsRange = NSRange(searchRange, in: text)
+		let results = _regex.matches(in: text, options: options, range: nsRange)
+		let res = results.compactMap { try? Match(result: $0, in: text) }
+		return Matches(text: text, pattern: _regex.pattern, match: res)
+	}
+
+	/// Enumerate through the matches in the provided text. Useful if you have a large or complex regex and/or text
 	/// - Parameters:
 	///   - text: The text to search
 	///   - range: (optional) the range of `text` to search within
@@ -177,10 +177,10 @@ public extension DSFRegex {
 		public let match: [Match]
 
 		/// The number of matches found for the search
-		public var numberOfMatches: Int { return self.match.count }
+		public var count: Int { return self.match.count }
 
 		/// Were there any matches found?
-		public var isEmpty: Bool { return self.numberOfMatches == 0 }
+		public var isEmpty: Bool { return self.count == 0 }
 
 		/// Returns the match relating to the index offset. Matches found are in order that they are found in the input text
 		public subscript(index: Int) -> Match {
@@ -190,7 +190,7 @@ public extension DSFRegex {
 
 		/// Did the regex match the input text completely? ie. number of matches == 1 AND the match range is equal to the input text range
 		public var isExactMatch: Bool {
-			if self.numberOfMatches != 1 {
+			if self.count != 1 {
 				return false
 			}
 			return self.match[0].range == self.textRange
@@ -326,4 +326,24 @@ public extension DSFRegex {
 private extension DSFRegex.Capture {
 	/// An empty capture object.
 	static var empty = "".startIndex ..< "".endIndex
+}
+
+// MARK: - String extensions
+
+public extension String {
+	/// Return true if the input text contains a match for the pattern, false otherwise
+	/// - Parameters:
+	///   - regex: The regex to perform matches with
+	/// - Returns: true if a match was found, false otherwise
+	func hasMatch(_ regex: DSFRegex) -> Bool {
+		return regex.hasMatch(self)
+	}
+
+	/// Return all match information for the current string and the specified regex
+	/// - Parameters:
+	///   - regex: The regex to perform matches with
+	/// - Returns: a structure containing all of the matches and capture groups for those matches
+	func matches(for regex: DSFRegex) -> DSFRegex.Matches {
+		return regex.matches(for: self)
+	}
 }

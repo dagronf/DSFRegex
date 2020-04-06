@@ -20,26 +20,128 @@ Also, pulling content out using capture groups is tedious and a little error-pro
 
 ## Usage
 
-You create a regex matching object using the constructor. If the regex is badly formatted or cannot be compiled, this constructor will throw.
+### Creation
+
+You create a regex matching object using the constructor and a regex pattern. If the regex is badly formatted or cannot be compiled, this constructor will throw.
 
 ```swift
 // Match against dummy phone numbers XXXX-YYY-ZZZ
 let phoneNumberRegex = try DSFRegex(#"(\d{4})-(\d{3})-(\d{3})"#)
 ```
 
-To just check whether a string matches against the regex, use the `matches` method
+### Matching 
+
+To check whether a string matches against the regex, use the `hasMatch` method.
 
 ```swift
-let hasAMatch = phoneNumberRegex.matches(in: "0499-999-999")   // true
-let noMatch = phoneNumberRegex.matches(in: "0499 999 999")   // false
+let hasAMatch = phoneNumberRegex.hasMatch("0499-999-999")   // true
+let noMatch = phoneNumberRegex.hasMatch("0499 999 999")     // false
 ```
 
-If you want to extract the data from the matches, use the `allMatches` method.
+If you want to extract all the match information, use the `matches` method.
 
 ```swift
-let matches = phoneNumberRegex.allMatches(in: "0499-999-999 0491-111-444 4324-222-123")
-//assert(matches.numberOfMatches == 3)
+let matches = phoneNumberRegex.matches(for: "0499-999-999 0491-111-444 4324-222-123")
+for match in matches {
+   let matchText = match.text(for: match.element)
+   Swift.print("Match `\(matchText)`")
+   for capture in match.capture {
+      let captureText = matches.text(for: capture)
+      Swift.print(" - `\(captureText)`")
+   }
+}
+```
 
+### Enumeration
+
+If you have a large input text or a complex regex that will take a while to process or you have constrained memory conditions you can choose to enumerate the match results rather than process everything up front.
+
+The enumeration method allows you to stop processing at any time or any point in the process (eg. if you have limited time constraints, or are looking for a specific match within a text).
+
+```swift
+/// Find all email addresses within a text
+let emailRegex = try DSFRegex("… some regex …")
+emailRegex.enumerateMatches(in: inputString) { (match) -> Bool in
+
+   // Extract match information
+   let matchRange = match.range
+   let matchText = inputString[match.range]
+   Swift.print("Found '\(matchText)' at range \(matchRange)")
+   
+   // Continue processing
+   return true
+}
+```
+
+### Matching string replacement
+
+Returns a new string containing matching regular expressions replaced with a template string.
+
+```swift
+// Redact email addresses within the text
+let emailRegex = try DSFRegex("… some regex …")
+let redacted = emailRegex.stringByReplacingMatches(
+    in: inputString,
+    withTemplate: NSRegularExpression.escapedTemplate(for: "<REDACTED-EMAIL-ADDRESS>")
+)
+```
+
+## Classes
+
+### DSFRegex
+
+The primary class used to perform a regex match.
+
+#### DSFRegex.Matches
+
+An object that contains all of the results of the regex matched against a text. It also provides a number of methods to help extract text from a match and/or capture object.
+
+#### DSFRegex.Match
+
+A single match object. Stores the range of the match within the original string.  If capture groups were defined within the regex also contains an array of the capture group objects.
+
+#### DSFRegex.Capture
+
+A capture represents a single range matching a capture within a regex result.  Each `match` may contain 0 or more captures depending on the captures available in the regex
+
+## Integration
+
+### Cocoapods
+
+`pod 'DSFRegex', :git => 'https://github.com/dagronf/DSFRegex/'`
+
+### Swift package manager
+
+## Examples
+
+For more examples and usage, you can find a series of tests in the `Tests` folder.
+
+### Phone number matching
+
+```swift
+let phoneNumberRegex = try DSFRegex(#"(\d{4})-(\d{3})-(\d{3})"#)
+let results = phoneNumberRegex.matches(for: "4499-999-999 3491-111-444 4324-222-123")
+
+// results.numberOfMatches == 3
+// results.text(match: 0) == "4499-999-999"
+// results.text(match: 1) == "3491-111-444"
+// results.text(match: 2) == "4324-222-123"
+
+// Just retrieve the text for each of the matches
+let textMatches = results.textMatching()  // == ["4499-999-999", "3491-111-444, "4324-222-123"]
+
+```
+
+If you're only interested in the first match, use
+
+```swift
+let first = phoneNumberRegex.firstMatch(in: "4499-999-999 3491-111-444 4324-222-123")
+```
+
+### Data extraction
+
+```swift
+let matches = phoneNumberRegex.matches(for: "0499-999-999 0491-111-444 4324-222-123")
 for match in matches.enumerated() {
    let matchText = allMatches.text(for: match.element)
    Swift.print("Match (\(match.offset)) -> `\(matchText)`")
@@ -49,7 +151,8 @@ for match in matches.enumerated() {
    }
 }
 ```
-The output from this looks like :-
+
+The output :-
 
 ```
 Match (0) -> `0499-999-888`
@@ -66,68 +169,35 @@ Match (2) -> `4324-222-123`
   Capture (2) -> `123`
 ```
 
-You use the `DSFRegex.Matches` object to retrieve text for each of match component.
-
-### Simple example
+### Print just the first two email addresses in a text
 
 ```swift
-let phoneNumberRegex = try DSFRegex(#"(\d{4})-(\d{3})-(\d{3})"#)
-let results = phoneNumberRegex.allMatches(in: "4499-999-999 3491-111-444 4324-222-123")
+/// Find all email addresses within a text
+let emailRegex = try DSFRegex("… some regex …")
+let inputString = "This is a test.\n noodles@compuserve4.nginix.com and sillytest32@gmail.com, grubby@supernoodle.org lives here"
 
-// Just retrieve the text for each of the matches
-let textMatches = results.textMatching()  // == ["4499-999-999", "3491-111-444, "4324-222-123"]
+var count = 0
+emailRegex.enumerateMatches(in: inputString) { (match) -> Bool in
+   
+   count += 1
 
-// results.numberOfMatches == 3
-// results.text(match: 0) == "4499-999-999"
-// results.text(match: 1) == "3491-111-444"
-// results.text(match: 2) == "4324-222-123"
+   // Extract match information
+   let matchRange = match.range
+   let nsRange = NSRange(matchRange, in: inputString)
+   let matchText = inputString[match.range]
+   Swift.print("\(count) - Found '\(matchText)' at range \(nsRange)")
+
+   // Stop processing if we've found more than two
+   return count < 2
+}
 ```
 
-If you're only interested in the first match, use
+Output :-
 
-```swift
-let first = phoneNumberRegex.firstMatch(in: "4499-999-999 3491-111-444 4324-222-123")
 ```
-
-## String replacement
-
-Returns a new string containing matching regular expressions replaced with a template string.
-
-```swift
-// Redact email addresses within the text
-let redacted = EmailRegex.stringByReplacingMatches(
-    in: inputString,
-    withTemplate: NSRegularExpression.escapedTemplate(for: "<REDACTED-EMAIL-ADDRESS>")
-)
+1 - Found 'noodles@compuserve4.nginix.com' at range {17, 30}
+2 - Found 'sillytest32@gmail.com' at range {52, 21}
 ```
-
-## Classes
-
-### DSFRegex
-
-The core class used to perform a regex search and match.
-
-### DSFRegex.Matches
-
-An object that contains all of the results of the regex matched against a text. It also provides a number of methods to help extract text from a match and/or capture object.
-
-### DSFRegex.Match
-
-A single match object. Stores the range of the match within the original string.  If capture groups were defined within the regex also contains an array of the capture group objects.
-
-### DSFRegex.Capture
-
-A capture represents a single range matching a capture within a regex result.  Each `match` may contain 0 or more captures depending on the captures available in the regex
-
-## Integration
-
-### Cocoapods
-
-`pod 'DSFRegex', :git => 'https://github.com/dagronf/DSFRegex/'`
-
-### Swift package manager
-
-
 
 # License
 

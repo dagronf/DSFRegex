@@ -27,6 +27,14 @@ import XCTest
 
 final class DSFRegexTests: XCTestCase {
 
+	lazy var EmailRegex: DSFRegex = {
+		let emailAddressRegex = #"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"#
+		guard let r = try? DSFRegex(emailAddressRegex, options: .caseInsensitive) else {
+			fatalError("Unable to create email regex")
+		}
+		return r
+	}()
+
 	func testThrowConstructor() {
 
 		// Invalid regular expression: /(?<={index:)\d+(?=})/: Invalid group
@@ -37,11 +45,11 @@ final class DSFRegexTests: XCTestCase {
 		performTest {
 			let phoneNumberRegex = try DSFRegex(#"(\d{4})-(\d{3})-(\d{3})"#)
 
-			XCTAssertTrue(phoneNumberRegex.matches(in: "3499-999-999"))
-			XCTAssertFalse(phoneNumberRegex.matches(in: "3499 999-999"))
+			XCTAssertTrue(phoneNumberRegex.hasMatch("3499-999-999"))
+			XCTAssertFalse(phoneNumberRegex.hasMatch("3499 999-999"))
 
-			let allMatches = phoneNumberRegex.allMatches(in: "4499-999-888 4491-111-444 4324-222-123")
-			XCTAssertEqual(3, allMatches.numberOfMatches)
+			let allMatches = phoneNumberRegex.matches(for: "4499-999-888 4491-111-444 4324-222-123")
+			XCTAssertEqual(3, allMatches.count)
 
 			XCTAssertEqual("4499-999-888", allMatches.text(for: allMatches[0]))
 			XCTAssertEqual("4491-111-444", allMatches.text(for: allMatches[1]))
@@ -64,8 +72,8 @@ final class DSFRegexTests: XCTestCase {
 			}
 
 			let regex = try DSFRegex(#"([\+-]?)(\d+)(?:\.(\d+))?"#)
-			let matches = regex.allMatches(in: "11.15 -9.942")
-			XCTAssertEqual(matches.numberOfMatches, 2)
+			let matches = regex.matches(for: "11.15 -9.942")
+			XCTAssertEqual(matches.count, 2)
 
 			// Get the text for the matches
 			let matchText1 = matches.text(for: matches.match[0])
@@ -84,11 +92,11 @@ final class DSFRegexTests: XCTestCase {
 	func testNonCapture() {
 		performTest {
 			let r = try DSFRegex("(\\+|-)?([[:digit:]]+)")
-			var results = r.allMatches(in: "bitter lemon")
-			XCTAssertEqual(0, results.numberOfMatches)
+			var results = r.matches(for: "bitter lemon")
+			XCTAssertEqual(0, results.count)
 			XCTAssertTrue(results.isEmpty)
-			results = r.allMatches(in: "1234")
-			XCTAssertEqual(1, results.numberOfMatches)
+			results = r.matches(for: "1234")
+			XCTAssertEqual(1, results.count)
 			XCTAssertFalse(results.isEmpty)
 
 			// Note here that the capture group (\\+|-)? is optional -- the library
@@ -97,12 +105,12 @@ final class DSFRegexTests: XCTestCase {
 			XCTAssertTrue(results[0].capture[0].isEmpty)
 			XCTAssertFalse(results[0].capture[1].isEmpty)
 
-			results = r.allMatches(in: "-9870")
-			XCTAssertEqual(1, results.numberOfMatches)
+			results = r.matches(for: "-9870")
+			XCTAssertEqual(1, results.count)
 
 			// Note that the regex does not handle a fraction value - hence the . breaks the number into two
-			results = r.allMatches(in: "-987.0")
-			XCTAssertEqual(2, results.numberOfMatches)
+			results = r.matches(for: "-987.0")
+			XCTAssertEqual(2, results.count)
 			XCTAssertEqual("-", results.text(for: results.match[0].capture[0]))
 			XCTAssertEqual("987", results.text(for: results.match[0].capture[1]))
 
@@ -114,8 +122,8 @@ final class DSFRegexTests: XCTestCase {
 	func testSimpleOne() {
 		performTest {
 			let r = try DSFRegex("(.*) [sS](\\d\\d)[eE](\\d\\d) - (.*)", options: .caseInsensitive)
-			let results = r.allMatches(in: "ChoccyWokky s03e01 - Noodles.mp4")
-			XCTAssertEqual(1, results.numberOfMatches)
+			let results = r.matches(for: "ChoccyWokky s03e01 - Noodles.mp4")
+			XCTAssertEqual(1, results.count)
 			XCTAssertEqual(4, results[0].capture.count)
 			XCTAssertEqual("ChoccyWokky", results.text(for: results[0].capture[0]))
 			print(results)
@@ -125,8 +133,8 @@ final class DSFRegexTests: XCTestCase {
 	func testSimpleTwo() {
 		performTest {
 			let r = try DSFRegex("(.*) [sS](\\d\\d)[eE](\\d\\d) - (.*)", options: .caseInsensitive)
-			let results = r.allMatches(in: "ChoccyWokky s03e01 - Noodles.pdf\nChoccyWokky s03e02 - Caterpillar.pdf")
-			XCTAssertEqual(2, results.numberOfMatches)
+			let results = r.matches(for: "ChoccyWokky s03e01 - Noodles.pdf\nChoccyWokky s03e02 - Caterpillar.pdf")
+			XCTAssertEqual(2, results.count)
 
 			XCTAssertFalse(results.isExactMatch)
 
@@ -148,27 +156,27 @@ final class DSFRegexTests: XCTestCase {
 			let r = try DSFRegex(#"([\+-]?)(\d+)(?:\.(\d+))?"#)
 
 			// Simple fractional
-			var results = r.allMatches(in: "11.15")
+			var results = r.matches(for: "11.15")
 
-			XCTAssertEqual(1, results.numberOfMatches)
+			XCTAssertEqual(1, results.count)
 			XCTAssertEqual(3, results[0].capture.count)
 			XCTAssertTrue(results[0].capture[0].isEmpty)
 			XCTAssertEqual("", results.text(for: results[0].capture[0]))
 			XCTAssertEqual("11", results.text(for: results[0].capture[1]))
 			XCTAssertEqual("15", results.text(for: results[0].capture[2]))
 
-			results = r.allMatches(in: "  11.15")
-			XCTAssertEqual(1, results.numberOfMatches)
+			results = r.matches(for: "  11.15")
+			XCTAssertEqual(1, results.count)
 			XCTAssertTrue(results[0].capture[0].isEmpty)
 			XCTAssertEqual("", results.text(for: results[0].capture[0]))
 			XCTAssertEqual("11", results.text(for: results[0].capture[1]))
 			XCTAssertEqual("15", results.text(for: results[0].capture[2]))
 
-			results = r.allMatches(in: "  11.15 -22.4 +-2.4")
-			XCTAssertEqual(3, results.numberOfMatches)
+			results = r.matches(for: "  11.15 -22.4 +-2.4")
+			XCTAssertEqual(3, results.count)
 
-			results = r.allMatches(in: "-12345657.890")
-			XCTAssertEqual(1, results.numberOfMatches)
+			results = r.matches(for: "-12345657.890")
+			XCTAssertEqual(1, results.count)
 			XCTAssertEqual("-", results.text(for: results[0].capture[0]))
 			XCTAssertFalse(results[0].capture[0].isEmpty)
 			XCTAssertEqual("12345657", results.text(for: results[0].capture[1]))
@@ -181,8 +189,8 @@ final class DSFRegexTests: XCTestCase {
 	func testBrokenTwo() {
 		performTest {
 			let r = try DSFRegex("(.*) [sS](\\d\\d)[eE](\\d\\d) - (.*)", options: .caseInsensitive)
-			let results = r.allMatches(in: "ChoccyWokky s03e01 - Noodles.mp4\nChoccyWokky s03d02 - Caterpillar.mp4")
-			XCTAssertEqual(1, results.numberOfMatches)
+			let results = r.matches(for: "ChoccyWokky s03e01 - Noodles.mp4\nChoccyWokky s03d02 - Caterpillar.mp4")
+			XCTAssertEqual(1, results.count)
 			XCTAssertEqual(4, results[0].capture.count)
 			print(results)
 		}
@@ -191,8 +199,8 @@ final class DSFRegexTests: XCTestCase {
 	func testSequence() {
 		performTest {
 			let r = try DSFRegex("([\\+-]?)(\\d+)(?:\\.(\\d+))?")
-			let results = r.allMatches(in: "  11.15 -22.4 +-2.4")
-			XCTAssertEqual(3, results.numberOfMatches)
+			let results = r.matches(for: "  11.15 -22.4 +-2.4")
+			XCTAssertEqual(3, results.count)
 			for match in results.enumerated() {
 				// ALL matches should have the same number of captures in their capture group,
 				// even if some of them are empty
@@ -206,14 +214,6 @@ final class DSFRegexTests: XCTestCase {
 		}
 	}
 
-	lazy var EmailRegex: DSFRegex = {
-		let emailAddressRegex = #"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"#
-		guard let r = try? DSFRegex(emailAddressRegex, options: .caseInsensitive) else {
-			fatalError("Unable to create email regex")
-		}
-		return r
-	}()
-
 	func testEmailValidation() {
 		// Email regex from here -- https://emailregex.com
 
@@ -221,10 +221,10 @@ final class DSFRegexTests: XCTestCase {
 			let inputString = "This is a test.\n noodles@compuserve4.nginix.com and sillytest32@gmail.com lives here"
 
 			// Test that there are matches.
-			XCTAssertTrue(EmailRegex.matches(in: inputString))
+			XCTAssertTrue(EmailRegex.hasMatch(inputString))
 
-			let matches = EmailRegex.allMatches(in: inputString)
-			XCTAssertEqual(2, matches.numberOfMatches)
+			let matches = EmailRegex.matches(for: inputString)
+			XCTAssertEqual(2, matches.count)
 
 			let email1 = matches.text(for: matches[0])
 			XCTAssertEqual("noodles@compuserve4.nginix.com", email1)
@@ -245,7 +245,7 @@ final class DSFRegexTests: XCTestCase {
 			let inputString = "This is a test.\n noodles@compuserve4.nginix.com and sillytest32@gmail.com lives here"
 
 			// Test that there are matches.
-			XCTAssertTrue(EmailRegex.matches(in: inputString))
+			XCTAssertTrue(EmailRegex.hasMatch(inputString))
 
 			try scenario("Check that the first match is found") {
 				let first = EmailRegex.firstMatch(in: inputString)
@@ -271,8 +271,8 @@ final class DSFRegexTests: XCTestCase {
 				XCTAssertNotNil(second)
 				XCTAssertEqual("bad", hexStrings[second!.capture[0]])
 
-				let results = regex.allMatches(in: hexStrings)
-				XCTAssertEqual(2, results.numberOfMatches)		// #noodle isn't a valid hex string
+				let results = regex.matches(for: hexStrings)
+				XCTAssertEqual(2, results.count)		// #noodle isn't a valid hex string
 				XCTAssertEqual("a3c113", results.text(match: 0, capture: 0))
 				XCTAssertEqual("bad", results.text(match: 1, capture: 0))
 			}
@@ -284,8 +284,8 @@ final class DSFRegexTests: XCTestCase {
 			let inputString = "This is a test.\n noodles@compuserve4.nginix.com and sillytest32@gmail.com lives here"
 
 			try scenario("Verify that our regex matches two email addresses") {
-				let matches = EmailRegex.allMatches(in: inputString)
-				XCTAssertEqual(2, matches.numberOfMatches)
+				let matches = EmailRegex.matches(for: inputString)
+				XCTAssertEqual(2, matches.count)
 
 				XCTAssertEqual("noodles@compuserve4.nginix.com", matches.text(for: matches[0]))
 				XCTAssertEqual("sillytest32@gmail.com", matches.text(for: matches[1]))
@@ -324,16 +324,16 @@ final class DSFRegexTests: XCTestCase {
 
 	func testExactMatch() {
 		performTest {
-			var matches = EmailRegex.allMatches(in: "noodles@compuserve4.nginix.com")
-			XCTAssertEqual(1, matches.numberOfMatches)
+			var matches = EmailRegex.matches(for: "noodles@compuserve4.nginix.com")
+			XCTAssertEqual(1, matches.count)
 			XCTAssertTrue(matches.isExactMatch)
 
-			matches = EmailRegex.allMatches(in: "email - noodles@compuserve4.nginix.com")
-			XCTAssertEqual(1, matches.numberOfMatches)
+			matches = EmailRegex.matches(for: "email - noodles@compuserve4.nginix.com")
+			XCTAssertEqual(1, matches.count)
 			XCTAssertFalse(matches.isExactMatch)
 
-			matches = EmailRegex.allMatches(in: "noodles@compuserve4.nginix.com ")
-			XCTAssertEqual(1, matches.numberOfMatches)
+			matches = EmailRegex.matches(for: "noodles@compuserve4.nginix.com ")
+			XCTAssertEqual(1, matches.count)
 			XCTAssertFalse(matches.isExactMatch)
 		}
 	}
@@ -342,20 +342,20 @@ final class DSFRegexTests: XCTestCase {
 		performTest {
 			let inputString = "This is a test.\n noodles@compuserve4.nginix.com and sillytest32@gmail.com lives here"
 
-			let matches = EmailRegex.allMatches(in: inputString)
-			XCTAssertEqual(2, matches.numberOfMatches)
+			let matches = EmailRegex.matches(for: inputString)
+			XCTAssertEqual(2, matches.count)
 
-			XCTAssertTrue(EmailRegex.matches(in: inputString))
+			XCTAssertTrue(EmailRegex.hasMatch(inputString))
 
 			let noMatchRange = inputString.range(0 ..< 30)
-			XCTAssertFalse(EmailRegex.matches(in: inputString, range: noMatchRange))
+			XCTAssertFalse(EmailRegex.hasMatch(inputString, range: noMatchRange))
 
-			let range2Matches = EmailRegex.allMatches(in: inputString, range: noMatchRange)
-			XCTAssertEqual(0, range2Matches.numberOfMatches)
+			let range2Matches = EmailRegex.matches(for: inputString, range: noMatchRange)
+			XCTAssertEqual(0, range2Matches.count)
 
 			let firstCheckRange = inputString.range(0 ..< 52)
-			let range1Matches = EmailRegex.allMatches(in: inputString, range: firstCheckRange)
-			XCTAssertEqual(1, range1Matches.numberOfMatches)
+			let range1Matches = EmailRegex.matches(for: inputString, range: firstCheckRange)
+			XCTAssertEqual(1, range1Matches.count)
 		}
 	}
 
@@ -363,16 +363,16 @@ final class DSFRegexTests: XCTestCase {
 		performTest {
 			try scenario("Test that non-ascii character set can be matched") {
 				let regex = try DSFRegex(#"^(?:[\p{L}\p{Mn}\p{Pd}\'\x{2019}]+\s[\p{L}\p{Mn}\p{Pd}\'\x{2019}]+\s?)+$"#)
-				let matches = regex.allMatches(in: "John Elkjærd")
-				XCTAssertEqual(1, matches.numberOfMatches)
-				XCTAssertFalse(regex.matches(in: "H4nn3 Andersen"))
+				let matches = regex.matches(for: "John Elkjærd")
+				XCTAssertEqual(1, matches.count)
+				XCTAssertFalse(regex.hasMatch("H4nn3 Andersen"))
 			}
 
 			try scenario("A sub-range of chinese text can be matched correctly") {
 				let regex = try DSFRegex(#"。(.*?)。"#)
 				let inputString = #"中國4日舉行全國哀悼活動，追悼在新型冠病毒疫情中犧牲的烈士和逝者，街頭隨處可見就地默哀的民眾。但網路也出現不滿「只悼念卻未追責」的留言，諷刺「先前所有的眼淚都被404（網頁被屏蔽）了，而在404這一天卻要人流下眼淚」。"#
-				let matches = regex.allMatches(in: inputString)
-				XCTAssertEqual(1, matches.numberOfMatches)
+				let matches = regex.matches(for: inputString)
+				XCTAssertEqual(1, matches.count)
 				let text = matches.text(for: matches[0].capture[0])
 				XCTAssertEqual(text, #"但網路也出現不滿「只悼念卻未追責」的留言，諷刺「先前所有的眼淚都被404（網頁被屏蔽）了，而在404這一天卻要人流下眼淚」"#)
 			}
@@ -380,8 +380,8 @@ final class DSFRegexTests: XCTestCase {
 			try scenario("Matching against an emoji range") {
 				let regex = try DSFRegex(#"\|(.+?)\|"#)
 				let inputString = #"This is a |😤👩‍👩‍👧‍👦👒🇳🇦|'s test |🧖‍♂️||cat|"#
-				let matches = regex.allMatches(in: inputString)
-				XCTAssertEqual(3, matches.numberOfMatches)
+				let matches = regex.matches(for: inputString)
+				XCTAssertEqual(3, matches.count)
 
 				XCTAssertEqual("|😤👩‍👩‍👧‍👦👒🇳🇦|", matches.text(match: 0))
 				XCTAssertEqual("|🧖‍♂️|", matches.text(match: 1))
@@ -398,9 +398,9 @@ final class DSFRegexTests: XCTestCase {
 			try scenario("Simple Unicode German and non-ascii") {
 				let regex = try DSFRegex("[0-9]")
 				let inputStr = "🇩🇪€4€9"
-				XCTAssert(regex.matches(in: inputStr))
-				let matches = regex.allMatches(in: inputStr)
-				XCTAssertEqual(2, matches.numberOfMatches)
+				XCTAssertTrue(regex.hasMatch(inputStr))
+				let matches = regex.matches(for: inputStr)
+				XCTAssertEqual(2, matches.count)
 				XCTAssertEqual("4", matches.text(match: 0))
 				XCTAssertEqual("9", matches.text(match: 1))
 			}
@@ -433,12 +433,52 @@ final class DSFRegexTests: XCTestCase {
 		performTest {
 			let inputString = "This is a test.\n noodles@compuserve4.nginix.com and sillytest32@gmail.com, grubby@supernoodle.org lives here"
 
-			var count = 0
-			EmailRegex.enumerateMatches(in: inputString) { (match) -> Bool in
-				count += 1
-				return count < 2		// skip the last email
+			try scenario("Store the first two matches") {
+				var count = 0
+				EmailRegex.enumerateMatches(in: inputString) { (match) -> Bool in
+					count += 1
+					return count < 2		// skip the last email
+				}
+				XCTAssertEqual(2, count)
 			}
-			XCTAssertEqual(2, count)
+
+			try scenario("Print the first two matches (README.md example)") {
+
+				var count = 0
+				EmailRegex.enumerateMatches(in: inputString) { (match) -> Bool in
+					count += 1
+
+					// Extract match information
+					let matchRange = match.range
+					let nsRange = NSRange(matchRange, in: inputString)
+					let matchText = inputString[match.range]
+					Swift.print("\(count) - Found '\(matchText)' at range \(nsRange)")
+
+					// Stop processing if we've found more than two
+					return count < 2
+				}
+			}
+		}
+	}
+
+	func testRegexStringExtensions() {
+		performTest {
+			let regex = try DSFRegex("\\w+")
+
+			try scenario("Check that the string extension works") {
+				let results = "This is a test".matches(for: regex)
+				XCTAssertEqual(4, results.count)
+				XCTAssertEqual(["This", "is", "a", "test"], results.textMatching())
+			}
+
+			try scenario("Check that the string extension works") {
+				XCTAssertTrue("This is a test".hasMatch(regex))
+
+				let regex2 = try DSFRegex("[a-z]+")
+				XCTAssertTrue("cat".hasMatch(regex2))
+				XCTAssertTrue("cat".matches(for: regex2).isExactMatch)
+				XCTAssertFalse("12345".hasMatch(regex2))
+			}
 		}
 	}
 
@@ -455,6 +495,7 @@ final class DSFRegexTests: XCTestCase {
 		("testExactMatch", testExactMatch),
 		("testSearchInRange", testSearchInRange),
 		("testUnicodeTests", testUnicodeTests),
+		("testRegexStringExtensions", testRegexStringExtensions),
 		("testEnumerateMatchesStopProcessingDuring", testEnumerateMatchesStopProcessingDuring)
 	]
 }
