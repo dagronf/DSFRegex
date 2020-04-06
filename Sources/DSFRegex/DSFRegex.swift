@@ -26,6 +26,13 @@ import Foundation
 
 /// A regex class wrapper for Swift
 public class DSFRegex {
+
+	/// Regex errors
+	enum RegexError: Error {
+		/// An invalid range was specified (zero length or outside the bounds of the input string)
+		case invalidRange
+	}
+
 	private let _regex: NSRegularExpression
 
 	/// The match pattern used to create the regex
@@ -53,7 +60,7 @@ public class DSFRegex {
 	///
 	/// If you only care about if it matches, and not _where_ it matches or capture groups, then use this
 	public func matches(in text: String, range: Range<String.Index>? = nil, options: NSRegularExpression.MatchingOptions = []) -> Bool {
-		let searchRange: Range<String.Index> = range ?? text.startIndex ..< text.endIndex
+		let searchRange: Range<String.Index> = range ?? (text.startIndex ..< text.endIndex)
 		let nsRange = NSRange(searchRange, in: text)
 		return _regex.firstMatch(in: text, options: options, range: nsRange) != nil
 	}
@@ -65,7 +72,7 @@ public class DSFRegex {
 	///   - options: The regex options to use when matching (optional)
 	/// - Returns: a structure containing all of the matches and capture groups for those matches
 	public func allMatches(in text: String, range: Range<String.Index>? = nil, options: NSRegularExpression.MatchingOptions = []) -> Matches {
-		let searchRange: Range<String.Index> = range ?? text.startIndex ..< text.endIndex
+		let searchRange: Range<String.Index> = range ?? (text.startIndex ..< text.endIndex)
 		let nsRange = NSRange(searchRange, in: text)
 		let results = _regex.matches(in: text, options: options, range: nsRange)
 		let res = results.compactMap { try? Match(result: $0, in: text) }
@@ -79,20 +86,51 @@ public class DSFRegex {
 	///   - options: The regex options to use when matching (optional)
 	/// - Returns: match information for the first match found, or nil if no matches were found
 	public func firstMatch(in text: String, range: Range<String.Index>? = nil, options: NSRegularExpression.MatchingOptions = []) -> Match? {
-		let searchRange: Range<String.Index> = range ?? text.startIndex ..< text.endIndex
+		let searchRange: Range<String.Index> = range ?? (text.startIndex ..< text.endIndex)
 		let nsRange = NSRange(searchRange, in: text)
 		guard let match = _regex.firstMatch(in: text, options: options, range: nsRange) else {
 			return nil
 		}
 		return try? Match(result: match, in: text)
 	}
-}
 
-public extension DSFRegex {
-	/// Regex errors
-	enum RegexError: Error {
-		/// An invalid range was specified (zero length or outside the bounds of the input string)
-		case invalidRange
+	/// Enumerate through the matches in the provided text
+	/// - Parameters:
+	///   - text: The text to search
+	///   - range: (optional) the range of `text` to search within
+	///   - progress: (optional) a block to report progress during a long-running match operation. If this block returns false, cancels the enumeration
+	///   - matchBlock: The block to call when a match is found. If this block returns false, cancels the enumeration
+	public func enumerateMatches(
+		in text: String,
+		range: Range<String.Index>? = nil,
+		progress: (() -> Bool)? = nil,
+		_ matchBlock: (Match) -> Bool) {
+		let searchRange: Range<String.Index> = range ?? (text.startIndex ..< text.endIndex)
+		let nsRange = NSRange(searchRange, in: text)
+
+		let options: NSRegularExpression.MatchingOptions =
+			(progress != nil) ? [.reportProgress, .reportCompletion] : [.reportCompletion]
+
+		_regex.enumerateMatches(in: text, options: options, range: nsRange) { (textCheckingResult, flags, stop) in
+			guard let check = textCheckingResult else {
+				if flags.contains(.progress),
+					let p = progress, p() == false {
+					// User has specified a progress callback and the progress block returned false
+					stop.pointee = true
+				}
+				return
+			}
+
+			guard let match = try? Match(result: check, in: text) else {
+				// Couldn't map an NSRange back into our original string. Very odd! Just ignore.
+				Swift.print("WARNING: Unable to map range into input text")
+				return
+			}
+
+			if matchBlock(match) == false {
+				stop.pointee = true
+			}
+		}
 	}
 }
 
@@ -110,7 +148,7 @@ public extension DSFRegex {
 	///
 	/// `NSRegularExpression.escapedTemplate(for: str)`
 	func stringByReplacingMatches(in text: String, withTemplate templ: String, range: Range<String.Index>? = nil, options: NSRegularExpression.MatchingOptions = []) -> String {
-		let searchRange: Range<String.Index> = range ?? text.startIndex ..< text.endIndex
+		let searchRange: Range<String.Index> = range ?? (text.startIndex ..< text.endIndex)
 		let nsRange = NSRange(searchRange, in: text)
 		return _regex.stringByReplacingMatches(
 			in: text,

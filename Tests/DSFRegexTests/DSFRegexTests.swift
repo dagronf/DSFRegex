@@ -407,6 +407,41 @@ final class DSFRegexTests: XCTestCase {
 		}
 	}
 
+	func testEnumerateMatches() {
+		performTest {
+			let inputString = "This is a test.\n noodles@compuserve4.nginix.com and sillytest32@gmail.com lives here"
+
+			var count = 0
+			EmailRegex.enumerateMatches(in: inputString) { (match) -> Bool in
+				let matchText = inputString[match.range]
+				switch count {
+				case 0:
+					XCTAssertEqual("noodles@compuserve4.nginix.com", matchText)
+				case 1:
+					XCTAssertEqual("sillytest32@gmail.com", matchText)
+				default:
+					XCTFail("internal error")
+				}
+
+				count += 1
+				return true
+			}
+		}
+	}
+
+	func testEnumerateMatchesStopProcessingDuring() {
+		performTest {
+			let inputString = "This is a test.\n noodles@compuserve4.nginix.com and sillytest32@gmail.com, grubby@supernoodle.org lives here"
+
+			var count = 0
+			EmailRegex.enumerateMatches(in: inputString) { (match) -> Bool in
+				count += 1
+				return count < 2		// skip the last email
+			}
+			XCTAssertEqual(2, count)
+		}
+	}
+
 	static var allTests = [
 		("testThrowConstructor", testThrowConstructor),
 		("testPhoneMatches", testPhoneMatches),
@@ -420,5 +455,6 @@ final class DSFRegexTests: XCTestCase {
 		("testExactMatch", testExactMatch),
 		("testSearchInRange", testSearchInRange),
 		("testUnicodeTests", testUnicodeTests),
+		("testEnumerateMatchesStopProcessingDuring", testEnumerateMatchesStopProcessingDuring)
 	]
 }
