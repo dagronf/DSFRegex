@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "DSFRegex",
+        "repositoryURL": "https://github.com/dagronf/DSFRegex.git",
+        "state": {
+          "branch": "master",
+          "revision": "5351fd344cd3528f715ade9369cd3b0c4b36049e",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
