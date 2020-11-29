@@ -482,6 +482,62 @@ final class DSFRegexTests: XCTestCase {
 		}
 	}
 
+	func testPartialRangeMatches() {
+		performTest {
+
+			let testString = "Check string PartialRangeTo works with strings"
+			//                0123456789012345678901234567890123456789012345
+			//                0000000000111111111122222222223333333333444444
+
+			try scenario("Check rangeFrom works") {
+				let regex = try DSFRegex("string")
+
+				let testString = "Check string PartialRangeFrom works with strings"
+
+				let results1 = regex.matches(for: testString)
+				XCTAssertEqual(2, results1.count)
+
+				let start = testString.index(testString.startIndex, offsetBy: 7)
+				let results2 = regex.matches(for: testString, rangeFrom: start...)
+				XCTAssertEqual(1, results2.count)
+
+				let start3 = testString.index(testString.startIndex, offsetBy: 6)
+				let results3 = regex.matches(for: testString, rangeFrom: start3...)
+				XCTAssertEqual(2, results3.count)
+			}
+
+			try scenario("Check rangeUpTo works") {
+				let regex = try DSFRegex("string")
+
+				let results1 = regex.matches(for: testString)
+				XCTAssertEqual(2, results1.count)
+
+				let end2 = testString.index(testString.startIndex, offsetBy: 44)
+				let results2 = regex.matches(for: testString, rangeUpTo: ..<end2)
+				XCTAssertEqual(1, results2.count)
+
+				let end3 = testString.index(testString.startIndex, offsetBy: 45)
+				let results3 = regex.matches(for: testString, rangeUpTo: ..<end3)
+				XCTAssertEqual(2, results3.count)
+			}
+
+			try scenario("Check rangeUpToIncluding works") {
+				let regex = try DSFRegex("string")
+
+				let results = regex.matches(for: testString)
+				XCTAssertEqual(2, results.count)
+
+				let end1 = testString.index(testString.startIndex, offsetBy: 43)
+				let results1 = regex.matches(for: testString, rangeUpToIncluding: ...end1)
+				XCTAssertEqual(1, results1.count)
+
+				let end2 = testString.index(testString.startIndex, offsetBy: 44)
+				let results2 = regex.matches(for: testString, rangeUpToIncluding: ...end2)
+				XCTAssertEqual(2, results2.count)
+			}
+		}
+	}
+
 	static var allTests = [
 		("testThrowConstructor", testThrowConstructor),
 		("testPhoneMatches", testPhoneMatches),
@@ -496,6 +552,7 @@ final class DSFRegexTests: XCTestCase {
 		("testSearchInRange", testSearchInRange),
 		("testUnicodeTests", testUnicodeTests),
 		("testRegexStringExtensions", testRegexStringExtensions),
-		("testEnumerateMatchesStopProcessingDuring", testEnumerateMatchesStopProcessingDuring)
+		("testEnumerateMatchesStopProcessingDuring", testEnumerateMatchesStopProcessingDuring),
+		("testPartialRangeMatches", testPartialRangeMatches)
 	]
 }

@@ -54,7 +54,7 @@ class ViewController: UIViewController {
 		)
 
 		self.matchText.text = ""
-		self.currentMatchButton.setTitle("", for: .normal)
+		//self.currentMatchButton.setTitle("", for: .normal)
 
 		guard let pattern = searchField.text else {
 			return
@@ -101,7 +101,9 @@ class ViewController: UIViewController {
 
 		self.textView.scrollRangeToVisible(nsRange)
 		self.textView.selectedRange = nsRange
-		self.currentMatchButton.setTitle("\(self.currentMatch + 1) / \(self.searchResults.count)", for: .normal)
+		UIView.performWithoutAnimation {
+			self.currentMatchButton.setTitle("\(self.currentMatch + 1) / \(self.searchResults.count)", for: .normal)
+		}
 
 		self.updateMatch()
 	}

@@ -94,6 +94,44 @@ public class DSFRegex {
 		return Matches(text: text, pattern: _regex.pattern, match: res)
 	}
 
+	/// Return all match information from a specific index to the end of the string
+	/// - Parameters:
+	///   - text: The input text to be searched
+	///   - rangeFrom: The partial range of the input text to be searched.
+	///   - options: The regex options to use when matching (optional)
+	/// - Returns: a structure containing all of the matches and capture groups for those matches within the specified range
+	public func matches(for text: String, rangeFrom: PartialRangeFrom<String.Index>, options: NSRegularExpression.MatchingOptions = []) -> Matches {
+		guard rangeFrom.lowerBound < text.endIndex else {
+			fatalError("Invalid Range")
+		}
+		let searchRange: Range<String.Index> = rangeFrom.lowerBound ..< text.endIndex
+		return matches(for: text, range: searchRange, options: options)
+	}
+
+	/// Return all match information from the start of the string to a specific index
+	/// - Parameters:
+	///   - text: The input text to be searched
+	///   - rangeUpTo: The partial range of the input text to be searched.
+	///   - options: The regex options to use when matching (optional)
+	/// - Returns: a structure containing all of the matches and capture groups for those matches within the specified range
+	public func matches(for text: String, rangeUpTo: PartialRangeUpTo<String.Index>, options: NSRegularExpression.MatchingOptions = []) -> Matches {
+		let searchRange: Range<String.Index> = text.startIndex ..< rangeUpTo.upperBound
+		return matches(for: text, range: searchRange, options: options)
+	}
+
+	/// Return all match information from the start of the range up to, and including, the last character in the range.
+	/// - Parameters:
+	///   - text: The input text to be searched
+	///   - rangeTo: The partial range of the input text to be searched.
+	///   - options: The regex options to use when matching (optional)
+	/// - Returns: a structure containing all of the matches and capture groups for those matches within the specified range
+	public func matches(for text: String, rangeUpToIncluding: PartialRangeThrough<String.Index>, options: NSRegularExpression.MatchingOptions = []) -> Matches {
+		// Move beyond the last character
+		let upperBound = text.index(rangeUpToIncluding.upperBound, offsetBy: 1)
+		let searchRange: Range<String.Index> = text.startIndex ..< upperBound
+		return matches(for: text, range: searchRange, options: options)
+	}
+
 	/// Enumerate through the matches in the provided text. Useful if you have a large or complex regex and/or text
 	/// - Parameters:
 	///   - text: The text to search

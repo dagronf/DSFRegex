@@ -20,6 +20,10 @@ Also, pulling content out using capture groups is tedious and a little error-pro
 
 ## Usage
 
+All ranges provided back to the caller (and conversely, when passing ranges to the regex object) are in the range of the Swift `String` passed in for the match. 
+
+This is important, as `NSRegularExpression` uses `NSString` and the code points and character range information are different between `NSString` and `String`, especially when dealing with characters in the high Unicode ranges such as emoji 🇦🇲 👨‍👩‍👦.
+
 ### Creation
 
 You create a regex matching object using the constructor and a regex pattern. If the regex is badly formatted or cannot be compiled, this constructor will throw.
