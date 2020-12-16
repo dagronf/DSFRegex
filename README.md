@@ -18,6 +18,38 @@ Every time I have to use `NSRegularExpression` in Swift I make the same mistakes
 
 Also, pulling content out using capture groups is tedious and a little error-prone. I wanted to abstract away from of the things that I kept stuffing up.
 
+## TL;DR - Show me something!
+
+```swift
+let inputText: String = <some text to match against>
+
+// Build the regex to match against (in this case, <number>\t<string>)
+// This regex has two capture groups, one for the number and one for the string.
+let regex = try DSFRegex(#"(\d*)\t\"([^\"]+)\""#)
+
+// Retrieve ALL the matches for the supplied text
+let searchResult = regex.matches(for: inputText)
+
+// Loop over each of the matches found, and print them out
+searchResult.forEach { match in 
+   let foundStr = inputText[match.range]          // The text of the entire match
+   let numberVal = inputText[match.captures[0]]   // Retrieve the first capture group text.
+   let stringVal = inputText[match.captures[1]]   // Retrieve the second capture group text.
+
+   Swift.print("Number is \(numberVal), String is \(stringVal)")
+}
+```
+
+The basic structure of a 'matches' result is as follows
+
+```
+Matches
+  > matches: An array of regex matches
+    > range: A match range. This range specifies the match range within the original text being searched
+    > captures: An array of capture groups
+       > A capture range. This range represents the range of a capture within the original text being searched
+```
+
 ## Usage
 
 All ranges provided back to the caller (and conversely, when passing ranges to the regex object) are in the range of the Swift `String` passed in for the match. 
@@ -45,12 +77,12 @@ let noMatch = phoneNumberRegex.hasMatch("0499 999 999")     // false
 If you want to extract all the match information, use the `matches` method.
 
 ```swift
-let matches = phoneNumberRegex.matches(for: "0499-999-999 0491-111-444 4324-222-123")
-for match in matches {
-   let matchText = match.text(for: match.element)
+let result = phoneNumberRegex.matches(for: "0499-999-999 0491-111-444 4324-222-123")
+result.forEach { match in 
+   let matchText = result.text(for: match.element)
    Swift.print("Match `\(matchText)`")
-   for capture in match.capture {
-      let captureText = matches.text(for: capture)
+   for capture in match.captures {
+      let captureText = result.text(for: capture)
       Swift.print(" - `\(captureText)`")
    }
 }
@@ -64,6 +96,7 @@ The enumeration method allows you to stop processing at any time or any point in
 
 ```swift
 /// Find all email addresses within a text
+let inputString = "… some input string …"
 let emailRegex = try DSFRegex("… some regex …")
 emailRegex.enumerateMatches(in: inputString) { (match) -> Bool in
 
@@ -145,8 +178,8 @@ let first = phoneNumberRegex.firstMatch(in: "4499-999-999 3491-111-444 4324-222-
 ### Data extraction
 
 ```swift
-let matches = phoneNumberRegex.matches(for: "0499-999-999 0491-111-444 4324-222-123")
-for match in matches.enumerated() {
+let allMatches = phoneNumberRegex.matches(for: "0499-999-999 0491-111-444 4324-222-123")
+for match in allMatches.matches.enumerated() {
    let matchText = allMatches.text(for: match.element)
    Swift.print("Match (\(match.offset)) -> `\(matchText)`")
    for capture in match.element.capture.enumerated() {
@@ -202,6 +235,15 @@ Output :-
 1 - Found 'noodles@compuserve4.nginix.com' at range {17, 30}
 2 - Found 'sillytest32@gmail.com' at range {52, 21}
 ```
+
+# Releases
+
+### `1.9.0`
+
+Renamed `match` to `matches` in the `Matches` data structure
+
+Changed `match` and `capture` members in the `Matches` and `Match` structure to plural to make the code more understandable.
+
 
 # License
 

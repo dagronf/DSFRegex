@@ -26,7 +26,6 @@ import Foundation
 
 /// A regex class wrapper for Swift
 public class DSFRegex {
-
 	/// Regex errors
 	enum RegexError: Error {
 		/// An invalid range was specified (zero length or outside the bounds of the input string)
@@ -37,7 +36,7 @@ public class DSFRegex {
 
 	/// The match pattern used to create the regex
 	public var pattern: String {
-		return _regex.pattern
+		return self._regex.pattern
 	}
 
 	/// Initialize a DSFRegex object with the specified parameters
@@ -46,7 +45,7 @@ public class DSFRegex {
 	///   - options: The regular expression options that are applied to the expression during matching. See NSRegularExpression.Options for possible values.
 	/// - Throws: Any error (NSError) encountered if the regular expression pattern is invalid
 	public init(_ pattern: String, options: NSRegularExpression.Options = []) throws {
-		_regex = try NSRegularExpression(pattern: pattern, options: options)
+		self._regex = try NSRegularExpression(pattern: pattern, options: options)
 	}
 
 	/// Return true if the input text contains a match for the pattern, false otherwise
@@ -62,7 +61,7 @@ public class DSFRegex {
 	public func hasMatch(_ text: String, range: Range<String.Index>? = nil, options: NSRegularExpression.MatchingOptions = []) -> Bool {
 		let searchRange: Range<String.Index> = range ?? (text.startIndex ..< text.endIndex)
 		let nsRange = NSRange(searchRange, in: text)
-		return _regex.firstMatch(in: text, options: options, range: nsRange) != nil
+		return self._regex.firstMatch(in: text, options: options, range: nsRange) != nil
 	}
 
 	/// Return the first match within a given string, or nil if no match was found
@@ -89,9 +88,9 @@ public class DSFRegex {
 	public func matches(for text: String, range: Range<String.Index>? = nil, options: NSRegularExpression.MatchingOptions = []) -> Matches {
 		let searchRange: Range<String.Index> = range ?? (text.startIndex ..< text.endIndex)
 		let nsRange = NSRange(searchRange, in: text)
-		let results = _regex.matches(in: text, options: options, range: nsRange)
+		let results = self._regex.matches(in: text, options: options, range: nsRange)
 		let res = results.compactMap { try? Match(result: $0, in: text) }
-		return Matches(text: text, pattern: _regex.pattern, match: res)
+		return Matches(text: text, pattern: self._regex.pattern, matches: res)
 	}
 
 	/// Return all match information from a specific index to the end of the string
@@ -105,7 +104,7 @@ public class DSFRegex {
 			fatalError("Invalid Range")
 		}
 		let searchRange: Range<String.Index> = rangeFrom.lowerBound ..< text.endIndex
-		return matches(for: text, range: searchRange, options: options)
+		return self.matches(for: text, range: searchRange, options: options)
 	}
 
 	/// Return all match information from the start of the string to a specific index
@@ -116,7 +115,7 @@ public class DSFRegex {
 	/// - Returns: a structure containing all of the matches and capture groups for those matches within the specified range
 	public func matches(for text: String, rangeUpTo: PartialRangeUpTo<String.Index>, options: NSRegularExpression.MatchingOptions = []) -> Matches {
 		let searchRange: Range<String.Index> = text.startIndex ..< rangeUpTo.upperBound
-		return matches(for: text, range: searchRange, options: options)
+		return self.matches(for: text, range: searchRange, options: options)
 	}
 
 	/// Return all match information from the start of the range up to, and including, the last character in the range.
@@ -129,7 +128,7 @@ public class DSFRegex {
 		// Move beyond the last character
 		let upperBound = text.index(rangeUpToIncluding.upperBound, offsetBy: 1)
 		let searchRange: Range<String.Index> = text.startIndex ..< upperBound
-		return matches(for: text, range: searchRange, options: options)
+		return self.matches(for: text, range: searchRange, options: options)
 	}
 
 	/// Enumerate through the matches in the provided text. Useful if you have a large or complex regex and/or text
@@ -142,17 +141,19 @@ public class DSFRegex {
 		in text: String,
 		range: Range<String.Index>? = nil,
 		progress: (() -> Bool)? = nil,
-		_ matchBlock: (Match) -> Bool) {
+		_ matchBlock: (Match) -> Bool
+	) {
 		let searchRange: Range<String.Index> = range ?? (text.startIndex ..< text.endIndex)
 		let nsRange = NSRange(searchRange, in: text)
 
 		let options: NSRegularExpression.MatchingOptions =
 			(progress != nil) ? [.reportProgress, .reportCompletion] : [.reportCompletion]
 
-		_regex.enumerateMatches(in: text, options: options, range: nsRange) { (textCheckingResult, flags, stop) in
+		self._regex.enumerateMatches(in: text, options: options, range: nsRange) { textCheckingResult, flags, stop in
 			guard let check = textCheckingResult else {
 				if flags.contains(.progress),
-					let p = progress, p() == false {
+				   let p = progress, p() == false
+				{
 					// User has specified a progress callback and the progress block returned false
 					stop.pointee = true
 				}
@@ -176,7 +177,7 @@ public extension DSFRegex {
 	/// Return a new string containing matching regular expressions replaced with the template string.
 	/// - Parameters:
 	///   - text: The string to search for values within.
-	///   - templ: The substitution template used when replacing matching instances.
+	///   - escapedTemplate: The substitution template used when replacing matching instances.
 	///   - range: The range of the string to search.
 	///   - options: The matching options to use. See NSRegularExpression.MatchingOptions for possible values
 	/// - Returns: A string with matching regular expressions replaced by the template string.
@@ -185,14 +186,37 @@ public extension DSFRegex {
 	/// NSRegularExpression provides a function to escape the replacement string correctly
 	///
 	/// `NSRegularExpression.escapedTemplate(for: str)`
-	func stringByReplacingMatches(in text: String, withTemplate templ: String, range: Range<String.Index>? = nil, options: NSRegularExpression.MatchingOptions = []) -> String {
+	///
+	/// If you don't want to reuse the escaped template, you should use the `stringByReplacingMatches(in:with:range:options:)` method instead
+	func stringByReplacingMatches(in text: String, withEscapedTemplateString escapedTemplate: String, range: Range<String.Index>? = nil, options: NSRegularExpression.MatchingOptions = []) -> String {
 		let searchRange: Range<String.Index> = range ?? (text.startIndex ..< text.endIndex)
 		let nsRange = NSRange(searchRange, in: text)
-		return _regex.stringByReplacingMatches(
+		return self._regex.stringByReplacingMatches(
 			in: text,
 			options: options,
 			range: nsRange,
-			withTemplate: templ
+			withTemplate: escapedTemplate
+		)
+	}
+
+	/// Return a new string containing matching regular expressions replaced with the template string.
+	/// - Parameters:
+	///   - text: The string to search for values within.
+	///   - string: The substitution template used when replacing matching instances.
+	///   - range: The range of the string to search.
+	///   - options: The matching options to use. See NSRegularExpression.MatchingOptions for possible values
+	/// - Returns: A string with matching regular expressions replaced by the template string.
+	///
+	/// This method automatically escapes 'string' during execution so that it is safe to use as a replacement string.
+	func stringByReplacingMatches(in text: String, with string: String, range: Range<String.Index>? = nil, options: NSRegularExpression.MatchingOptions = []) -> String {
+		let searchRange: Range<String.Index> = range ?? (text.startIndex ..< text.endIndex)
+		let nsRange = NSRange(searchRange, in: text)
+		let templateString = NSRegularExpression.escapedTemplate(for: string)
+		return self._regex.stringByReplacingMatches(
+			in: text,
+			options: options,
+			range: nsRange,
+			withTemplate: templateString
 		)
 	}
 }
@@ -206,24 +230,24 @@ public extension DSFRegex {
 		public let text: String
 
 		/// A range that represents the entire range for the input search text
-		public var textRange: Range<String.Index> { return text.startIndex ..< text.endIndex }
+		public var textRange: Range<String.Index> { return self.text.startIndex ..< self.text.endIndex }
 
 		/// The regex pattern that was used to create the match result
 		public let pattern: String
 
 		/// The array of matches found
-		public let match: [Match]
+		public let matches: [Match]
 
 		/// The number of matches found for the search
-		public var count: Int { return self.match.count }
+		public var count: Int { return self.matches.count }
 
 		/// Were there any matches found?
 		public var isEmpty: Bool { return self.count == 0 }
 
 		/// Returns the match relating to the index offset. Matches found are in order that they are found in the input text
 		public subscript(index: Int) -> Match {
-			assert(index < self.match.count)
-			return match[index]
+			assert(index < self.matches.count)
+			return self.matches[index]
 		}
 
 		/// Did the regex match the input text completely? ie. number of matches == 1 AND the match range is equal to the input text range
@@ -231,7 +255,7 @@ public extension DSFRegex {
 			if self.count != 1 {
 				return false
 			}
-			return self.match[0].range == self.textRange
+			return self.matches[0].range == self.textRange
 		}
 	}
 }
@@ -239,10 +263,9 @@ public extension DSFRegex {
 // MARK: Text retrieval methods
 
 public extension DSFRegex.Matches {
-
 	/// Returns the text for each of the matches
 	func textMatching() -> [String] {
-		return match.map { self.text(for: $0) }
+		return self.matches.map { self.text(for: $0) }
 	}
 
 	/// Returns the text for the specified match
@@ -268,15 +291,15 @@ public extension DSFRegex.Matches {
 	/// - Parameter match: the match to retrieve capture string from
 	/// - Returns: an array of the capture strings for the match
 	func text(forCapturesIn match: DSFRegex.Match) -> [String] {
-		return self.text(for: match.capture)
+		return self.text(for: match.captures)
 	}
 
 	/// Returns the string for a match
 	/// - Parameter match: index of the match to retrieve
 	/// - Returns: a string containing the text of the match
 	func text(match: Int) -> String {
-		assert(match < self.match.count)
-		let match = self.match[match]
+		assert(match < self.matches.count)
+		let match = self.matches[match]
 		return self.text(for: match)
 	}
 
@@ -286,9 +309,9 @@ public extension DSFRegex.Matches {
 	///   - capture: index of the capture within the match to retrieve
 	/// - Returns: a string containing the text of the match for the capture
 	func text(match: Int, capture: Int) -> String {
-		assert(match < self.match.count)
-		assert(capture < self.match[match].capture.count)
-		let capture = self.match[match].capture[capture]
+		assert(match < self.matches.count)
+		assert(capture < self.matches[match].captures.count)
+		let capture = self.matches[match].captures[capture]
 		return self.text(for: capture)
 	}
 }
@@ -298,7 +321,7 @@ public extension DSFRegex.Matches {
 extension DSFRegex.Matches: Sequence {
 	/// Extension to allow conformance to sequence, so that you can do `for match in result { $0 ... }`
 	public func makeIterator() -> MatchIterator {
-		return MatchIterator(matches: self.match)
+		return MatchIterator(matches: self.matches)
 	}
 
 	/// Iterator to allow matches to be iterated over
@@ -309,9 +332,9 @@ extension DSFRegex.Matches: Sequence {
 		var offset: Int = 0
 
 		public mutating func next() -> DSFRegex.Match? {
-			if offset < matches.count {
-				let m1 = matches[offset]
-				offset += 1
+			if self.offset < self.matches.count {
+				let m1 = self.matches[self.offset]
+				self.offset += 1
 				return m1
 			}
 			return nil
@@ -328,7 +351,7 @@ public extension DSFRegex {
 		public let range: Range<String.Index>
 
 		/// The captures that were found as part of the search
-		public let capture: [Capture]
+		public let captures: [Capture]
 
 		init(result: NSTextCheckingResult, in text: String) throws {
 			let matchRange = result.range(at: 0)
@@ -342,12 +365,13 @@ public extension DSFRegex {
 				let r = result.range(at: count)
 				if r.location != NSNotFound, let textRange = Range(r, in: text) {
 					captures.append(textRange as Capture)
-				} else {
+				}
+				else {
 					// An empty capture result (for example, matching on (\+-)?(\\d)* with text '1234')
 					captures.append(DSFRegex.Capture.empty)
 				}
 			}
-			self.capture = captures
+			self.captures = captures
 		}
 	}
 }

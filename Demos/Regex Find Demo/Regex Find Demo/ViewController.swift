@@ -137,7 +137,7 @@ extension ViewController {
 
 		let expansionSize = 50
 
-		let match = results.match[self.currentMatch]
+		let match = results.matches[self.currentMatch]
 		let text = self.textView.text ?? ""
 
 		let nsFullRange = NSRange(text.startIndex ..< text.endIndex, in: text)
@@ -187,10 +187,10 @@ extension ViewController {
 			$0.set([.underlineStyle: NSUnderlineStyle.single.rawValue])
 				.set(.label)
 				.set(.boldSystemFont(ofSize: 15))
-				.append("\n\nCaptures: \(match.capture.count)\n")
+				.append("\n\nCaptures: \(match.captures.count)\n")
 				.unset(.underlineStyle)
 
-			for capture in match.capture.enumerated() {
+			for capture in match.captures.enumerated() {
 				let captureText = text[capture.element]
 
 				$0.set(.boldSystemFont(ofSize: 15))

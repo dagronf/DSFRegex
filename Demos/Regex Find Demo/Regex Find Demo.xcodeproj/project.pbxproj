@@ -15,7 +15,7 @@
 		23236155243BF67000CFDB5D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 23236153243BF67000CFDB5D /* LaunchScreen.storyboard */; };
 		23236162243BF95B00CFDB5D /* alice-in-wonderland.txt in Resources */ = {isa = PBXBuildFile; fileRef = 23236161243BF95B00CFDB5D /* alice-in-wonderland.txt */; };
 		23236166243C15CC00CFDB5D /* DSFAttributedStringStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23236165243C15CC00CFDB5D /* DSFAttributedStringStream.swift */; };
-		23236169243C2E0100CFDB5D /* DSFRegex in Frameworks */ = {isa = PBXBuildFile; productRef = 23236168243C2E0100CFDB5D /* DSFRegex */; };
+		2344E704258AABDE00330CAC /* DSFRegex in Frameworks */ = {isa = PBXBuildFile; productRef = 2344E703258AABDE00330CAC /* DSFRegex */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +29,7 @@
 		23236156243BF67000CFDB5D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		23236161243BF95B00CFDB5D /* alice-in-wonderland.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "alice-in-wonderland.txt"; sourceTree = "<group>"; };
 		23236165243C15CC00CFDB5D /* DSFAttributedStringStream.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DSFAttributedStringStream.swift; sourceTree = "<group>"; };
+		2344E6FE258AABCB00330CAC /* DSFRegex */ = {isa = PBXFileReference; lastKnownFileType = folder; name = DSFRegex; path = ../..; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				23236169243C2E0100CFDB5D /* DSFRegex in Frameworks */,
+				2344E704258AABDE00330CAC /* DSFRegex in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -46,8 +47,10 @@
 		2323613C243BF66F00CFDB5D = {
 			isa = PBXGroup;
 			children = (
+				2344E6FE258AABCB00330CAC /* DSFRegex */,
 				23236147243BF66F00CFDB5D /* Regex Find Demo */,
 				23236146243BF66F00CFDB5D /* Products */,
+				2344E702258AABDE00330CAC /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -75,6 +78,13 @@
 			path = "Regex Find Demo";
 			sourceTree = "<group>";
 		};
+		2344E702258AABDE00330CAC /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -89,10 +99,11 @@
 			buildRules = (
 			);
 			dependencies = (
+				2344E701258AABD800330CAC /* PBXTargetDependency */,
 			);
 			name = "Regex Find Demo";
 			packageProductDependencies = (
-				23236168243C2E0100CFDB5D /* DSFRegex */,
+				2344E703258AABDE00330CAC /* DSFRegex */,
 			);
 			productName = "Regex Find Demo";
 			productReference = 23236145243BF66F00CFDB5D /* Regex Find Demo.app */;
@@ -123,7 +134,6 @@
 			);
 			mainGroup = 2323613C243BF66F00CFDB5D;
 			packageReferences = (
-				23236167243C2E0100CFDB5D /* XCRemoteSwiftPackageReference "DSFRegex" */,
 			);
 			productRefGroup = 23236146243BF66F00CFDB5D /* Products */;
 			projectDirPath = "";
@@ -161,6 +171,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		2344E701258AABD800330CAC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 2344E700258AABD800330CAC /* DSFRegex */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		2323614E243BF66F00CFDB5D /* Main.storyboard */ = {
@@ -355,21 +372,13 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		23236167243C2E0100CFDB5D /* XCRemoteSwiftPackageReference "DSFRegex" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/dagronf/DSFRegex.git";
-			requirement = {
-				branch = master;
-				kind = branch;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
-		23236168243C2E0100CFDB5D /* DSFRegex */ = {
+		2344E700258AABD800330CAC /* DSFRegex */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 23236167243C2E0100CFDB5D /* XCRemoteSwiftPackageReference "DSFRegex" */;
+			productName = DSFRegex;
+		};
+		2344E703258AABDE00330CAC /* DSFRegex */ = {
+			isa = XCSwiftPackageProductDependency;
 			productName = DSFRegex;
 		};
 /* End XCSwiftPackageProductDependency section */
