@@ -567,8 +567,8 @@ final class DSFRegexTests: XCTestCase {
 		performTest {
 
 			let testString = "Check string PartialRangeTo works with strings"
-			//                0123456789012345678901234567890123456789012345
 			//                0000000000111111111122222222223333333333444444
+			//                0123456789012345678901234567890123456789012345
 
 			try scenario("Check rangeFrom works") {
 				let regex = try DSFRegex("string")
@@ -619,6 +619,180 @@ final class DSFRegexTests: XCTestCase {
 		}
 	}
 
+	func testCursorSupport() {
+		performTest {
+
+			let testString = "Check string PartialRangeTo works with strings"
+			//                0000000000111111111122222222223333333333444444
+			//                0123456789012345678901234567890123456789012345
+
+			let start1 = testString.index(testString.startIndex, offsetBy: 6)
+			let end1 = testString.index(testString.startIndex, offsetBy: 12)
+			let start2 = testString.index(testString.startIndex, offsetBy: 39)
+			let end2 = testString.index(testString.startIndex, offsetBy: 45)
+
+			try scenario("Check incrementer works") {
+
+				let regex = try DSFRegex("string")
+
+				// Get the first match
+
+				var cursor = testString.firstMatch(for: regex)
+				XCTAssertNotNil(cursor)
+				cursor!.describeRange(in: testString)
+				var match = cursor!.range
+
+				XCTAssertEqual(start1, match.lowerBound)
+				XCTAssertEqual(end1, match.upperBound)
+
+				// Find the next match
+
+				cursor = testString.nextMatch(for: cursor!)
+				XCTAssertNotNil(cursor)
+				cursor!.describeRange(in: testString)
+
+				match = cursor!.range
+
+				XCTAssertEqual(start2, match.lowerBound)
+				XCTAssertEqual(end2, match.upperBound)
+
+				// Find the next match. This should be nil
+
+				cursor = testString.nextMatch(for: cursor!)
+				XCTAssertNil(cursor)
+			}
+		}
+	}
+
+	func testCursorSupportWithLoop() {
+		performTest {
+
+			let testString = "Check string PartialRangeTo works with strings"
+			//                0000000000111111111122222222223333333333444444
+			//                0123456789012345678901234567890123456789012345
+
+			let start1 = testString.index(testString.startIndex, offsetBy: 6)
+			let end1 = testString.index(testString.startIndex, offsetBy: 12)
+			let start2 = testString.index(testString.startIndex, offsetBy: 39)
+			let end2 = testString.index(testString.startIndex, offsetBy: 45)
+
+			try scenario("Check incrementer works") {
+
+				let regex = try DSFRegex("string")
+
+				// Get the first match
+
+				var cursor = testString.firstMatch(for: regex)
+				XCTAssertNotNil(cursor)
+				cursor!.describeRange(in: testString)
+				var match = cursor!.range
+
+				XCTAssertEqual(start1, match.lowerBound)
+				XCTAssertEqual(end1, match.upperBound)
+
+				// Find the next match
+
+				cursor = testString.nextMatch(for: cursor!, loop: true)
+				XCTAssertNotNil(cursor)
+				cursor!.describeRange(in: testString)
+
+				match = cursor!.range
+
+				XCTAssertEqual(start2, match.lowerBound)
+				XCTAssertEqual(end2, match.upperBound)
+
+				// Find the next match. This should loop through to the
+				// start of the string as we've run over the end of the string
+
+				cursor = testString.nextMatch(for: cursor!, loop: true)
+
+				XCTAssertNotNil(cursor)
+				cursor!.describeRange(in: testString)
+				XCTAssertEqual(start1, cursor!.range.lowerBound)
+				XCTAssertEqual(end1, cursor!.range.upperBound)
+
+				cursor = testString.nextMatch(for: cursor!, loop: true)
+
+				XCTAssertNotNil(cursor)
+				cursor!.describeRange(in: testString)
+				XCTAssertEqual(start2, cursor!.range.lowerBound)
+				XCTAssertEqual(end2, cursor!.range.upperBound)
+			}
+		}
+	}
+
+	func testIncrementerStartSomewhereElseInString() {
+		performTest {
+
+			let testString = "Check string PartialRangeTo works with strings"
+			//                0000000000111111111122222222223333333333444444
+			//                0123456789012345678901234567890123456789012345
+
+			//let start1 = testString.index(testString.startIndex, offsetBy: 6)
+			let end1 = testString.index(testString.startIndex, offsetBy: 12)
+			let start2 = testString.index(testString.startIndex, offsetBy: 39)
+			let end2 = testString.index(testString.startIndex, offsetBy: 45)
+
+			try scenario("Check incrementer works") {
+
+				let regex = try DSFRegex("string")
+
+				// Get the first match
+
+				var cursor = testString.firstMatch(for: regex, startingAt: end1)
+				XCTAssertNotNil(cursor)
+				cursor!.describeRange(in: testString)
+				XCTAssertEqual(start2, cursor!.range.lowerBound)
+				XCTAssertEqual(end2, cursor!.range.upperBound)
+
+				// Find the next match. This should be nil
+
+				cursor = testString.nextMatch(for: cursor!)
+				XCTAssertNil(cursor)
+			}
+		}
+	}
+
+	func index(_ str: String, offset: Int) -> String.Index {
+		return str.index(str.startIndex, offsetBy: offset)
+	}
+
+
+	func testIncrementerDoWhile() {
+		performTest {
+
+			let testString = "Check string PartialRangeTo works with strings string"
+			//                00000000001111111111222222222233333333334444444444555
+			//                01234567890123456789012345678901234567890123456789012
+
+
+			//let start1 = testString.index(testString.startIndex, offsetBy: 6)
+			let results = [
+				index(testString, offset: 6) ..< index(testString, offset: 12),
+				index(testString, offset: 39) ..< index(testString, offset: 45),
+				index(testString, offset: 47) ..< index(testString, offset: 53)
+			]
+
+			try scenario("Check incrementer works") {
+
+				let regex = try DSFRegex("string")
+
+				var visitor = testString.firstMatch(for: regex)
+
+				var i = 0
+				while visitor != nil {
+					let v = visitor!
+					v.describeRange(in: testString)
+					XCTAssertEqual(results[i], v.range)
+					visitor = testString.nextMatch(for: v)
+					i += 1
+				}
+
+				XCTAssertEqual(3, i)
+			}
+		}
+	}
+
 	static var allTests = [
 		("testThrowConstructor", testThrowConstructor),
 		("testPhoneMatches", testPhoneMatches),
@@ -636,6 +810,8 @@ final class DSFRegexTests: XCTestCase {
 		("testRegexStringExtensions", testRegexStringExtensions),
 		("testEnumerateMatchesStopProcessingDuring", testEnumerateMatchesStopProcessingDuring),
 		("testPartialRangeMatches", testPartialRangeMatches),
-		("testEnumerateMatchesWithEmojiVerifyingUnicodeOffset", testEnumerateMatchesWithEmojiVerifyingUnicodeOffset)
+		("testEnumerateMatchesWithEmojiVerifyingUnicodeOffset", testEnumerateMatchesWithEmojiVerifyingUnicodeOffset),
+		("testCursorSupport", testCursorSupport),
+		("testCursorSupportWithLoop", testCursorSupportWithLoop)
 	]
 }

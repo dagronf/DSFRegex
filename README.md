@@ -110,6 +110,37 @@ emailRegex.enumerateMatches(in: inputString) { (match) -> Bool in
 }
 ```
 
+### String search cursor
+
+A string search cursor is useful when you are searching sporadically within a string, say in response to a user clicking on the 'next' button.  The cursor keeps track of the current match, and is used when locating the next match in the string.
+
+```swift
+var searchCursor: DSFRegex.Cursor?
+var content: String
+
+@IBAction func startSearch(_ sender: Any) {
+   let regex = DSFRegex(... some pattern ...)
+   
+   // Find the first match in the string
+   self.searchCursor = self.content.firstMatch(for: regex)
+   
+   self.displayForCurrentSearch()
+}
+
+@IBAction func nextSearchResult(_ sender: Any) {
+   if let previous = self.searchCursor {
+   	   // Find the next match in the string from the 
+      self.searchCursor = self.content.nextMatch(for: previous)
+   }
+   self.displayForCurrentSearch()
+}
+
+internal func displayForCurrentSearch() {
+   // Update the UI reflecting the search result found in self.searchCursor
+   ...
+}
+```
+
 ### Matching string replacement
 
 Returns a new string containing matching regular expressions replaced with a template string.
@@ -141,6 +172,10 @@ A single match object. Stores the range of the match within the original string.
 
 A capture represents a single range matching a capture within a regex result.  Each `match` may contain 0 or more captures depending on the captures available in the regex
 
+#### DSFRegex.Cursor
+
+An incremental cursor object used when searching via the `String` extension.
+
 ## Integration
 
 ### Cocoapods
@@ -148,6 +183,12 @@ A capture represents a single range matching a capture within a regex result.  E
 `pod 'DSFRegex', :git => 'https://github.com/dagronf/DSFRegex/'`
 
 ### Swift package manager
+
+Add `https://github.com/dagronf/DSFRegex` to your project.
+
+### Direct
+
+Copy the files in the `Sources/DSFRegex` into your project
 
 ## Examples
 
@@ -238,11 +279,14 @@ Output :-
 
 # Releases
 
+### `1.10.0`
+
+* Added string cursor pattern
+
 ### `1.9.0`
 
-Renamed `match` to `matches` in the `Matches` data structure
-
-Changed `match` and `capture` members in the `Matches` and `Match` structure to plural to make the code more understandable.
+* Renamed `match` to `matches` in the `Matches` data structure
+* Changed `match` and `capture` members in the `Matches` and `Match` structure to plural to make the code more understandable.
 
 
 # License
@@ -250,7 +294,7 @@ Changed `match` and `capture` members in the `Matches` and `Match` structure to 
 ```
 MIT License
 
-Copyright (c) 2020 Darren Ford
+Copyright (c) 2021 Darren Ford
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
