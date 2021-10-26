@@ -279,6 +279,10 @@ Output :-
 
 # Releases
 
+### `2.0.0`
+
+* Added separate static and dynamic libraries
+
 ### `1.10.0`
 
 * Added string cursor pattern
