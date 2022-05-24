@@ -18,6 +18,8 @@ Every time I have to use `NSRegularExpression` in Swift I make the same mistakes
 
 Also, pulling content out using capture groups is tedious and a little error-prone. I wanted to abstract away from of the things that I kept stuffing up.
 
+Compatible with macOS, iOS, tvOS, watchOS and Linux.
+
 ## TL;DR - Show me something!
 
 ```swift

@@ -765,7 +765,6 @@ final class DSFRegexTests: XCTestCase {
 			//                00000000001111111111222222222233333333334444444444555
 			//                01234567890123456789012345678901234567890123456789012
 
-
 			//let start1 = testString.index(testString.startIndex, offsetBy: 6)
 			let results = [
 				index(testString, offset: 6) ..< index(testString, offset: 12),
@@ -792,26 +791,4 @@ final class DSFRegexTests: XCTestCase {
 			}
 		}
 	}
-
-	static var allTests = [
-		("testThrowConstructor", testThrowConstructor),
-		("testPhoneMatches", testPhoneMatches),
-		("testSimpleMatchForeach", testSimpleMatchForeach),
-		("testNonCapture", testNonCapture),
-		("testSimpleOne", testSimpleOne),
-		("testSimpleTwo", testSimpleTwo),
-		("testFractional", testFractional),
-		("testSequence", testSequence),
-		("testEmailValidation", testEmailValidation),
-		("testStringReplacement", testStringReplacement),
-		("testExactMatch", testExactMatch),
-		("testSearchInRange", testSearchInRange),
-		("testUnicodeTests", testUnicodeTests),
-		("testRegexStringExtensions", testRegexStringExtensions),
-		("testEnumerateMatchesStopProcessingDuring", testEnumerateMatchesStopProcessingDuring),
-		("testPartialRangeMatches", testPartialRangeMatches),
-		("testEnumerateMatchesWithEmojiVerifyingUnicodeOffset", testEnumerateMatchesWithEmojiVerifyingUnicodeOffset),
-		("testCursorSupport", testCursorSupport),
-		("testCursorSupportWithLoop", testCursorSupportWithLoop)
-	]
 }
