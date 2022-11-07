@@ -6,14 +6,9 @@ import PackageDescription
 let package = Package(
 	name: "DSFRegex",
 	products: [
-		.library(
-			name: "DSFRegex",
-			type: .dynamic,
-			targets: ["DSFRegex"]),
-		.library(
-			name: "DSFRegexStatic",
-			type: .static,
-			targets: ["DSFRegex"]),
+		.library(name: "DSFRegex", targets: ["DSFRegex"]),
+		.library(name: "DSFRegex-static", type: .static, targets: ["DSFRegex"]),
+		.library(name: "DSFRegex-dynamic", type: .dynamic, targets: ["DSFRegex"]),
 	],
 	dependencies: [
 		// Dependencies declare other packages that this package depends on.

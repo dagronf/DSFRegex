@@ -279,28 +279,12 @@ Output :-
 2 - Found 'sillytest32@gmail.com' at range {52, 21}
 ```
 
-# Releases
-
-### `2.0.0`
-
-* Added separate static and dynamic libraries
-
-### `1.10.0`
-
-* Added string cursor pattern
-
-### `1.9.0`
-
-* Renamed `match` to `matches` in the `Matches` data structure
-* Changed `match` and `capture` members in the `Matches` and `Match` structure to plural to make the code more understandable.
-
-
 # License
 
 ```
 MIT License
 
-Copyright (c) 2021 Darren Ford
+Copyright (c) 2022 Darren Ford
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
