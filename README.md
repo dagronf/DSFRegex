@@ -4,7 +4,7 @@ A Swift regex class abstracting away some of the complexities of NSRegularExpres
 
 <p align="center">
     <img src="https://img.shields.io/github/v/tag/dagronf/DSFRegex" />
-    <img src="https://img.shields.io/badge/Swift-5.0-orange.svg" />
+    <img src="https://img.shields.io/badge/Swift-5.3-orange.svg" />
     <img src="https://img.shields.io/badge/License-MIT-lightgrey" />
     <img src="https://img.shields.io/badge/pod-compatible-informational" alt="CocoaPods" />
     <a href="https://swift.org/package-manager">
@@ -284,7 +284,7 @@ Output :-
 ```
 MIT License
 
-Copyright (c) 2022 Darren Ford
+Copyright (c) 2023 Darren Ford
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

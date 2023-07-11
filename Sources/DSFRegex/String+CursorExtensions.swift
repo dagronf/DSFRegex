@@ -1,12 +1,9 @@
 //
 //  String+CursorExtensions.swift
-//  DSFRegex
 //
-//  Created by Darren Ford on 13/1/21.
+//  Copyright © 2023 Darren Ford. All rights reserved.
 //
 //  MIT License
-//
-//  Copyright (c) 2021 Darren Ford
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
