@@ -1,24 +1,18 @@
 # DSFRegex
 
-A Swift regex class abstracting away some of the complexities of NSRegularExpression
+A Swift regex class abstracting away some of the complexities of `NSRegularExpression`
 
-<p align="center">
-    <img src="https://img.shields.io/github/v/tag/dagronf/DSFRegex" />
-    <img src="https://img.shields.io/badge/Swift-5.3-orange.svg" />
-    <img src="https://img.shields.io/badge/License-MIT-lightgrey" />
-    <img src="https://img.shields.io/badge/pod-compatible-informational" alt="CocoaPods" />
-    <a href="https://swift.org/package-manager">
-        <img src="https://img.shields.io/badge/spm-compatible-brightgreen.svg?style=flat" alt="Swift Package Manager" />
-    </a>
-</p>
+![tag](https://img.shields.io/github/v/tag/dagronf/DSFRegex)
+![swift versions](https://img.shields.io/badge/Swift-5.3+-orange.svg)
+![Platform support](https://img.shields.io/badge/platform-ios%20%7C%20osx%20%7C%20tvos%20%7C%20watchos%20%7C%20macCatalyst%20%7C%20linux-lightgrey.svg?style=flat-square)
+[![License MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/dagronf/DSFRegex/blob/master/LICENSE) 
+![Build](https://img.shields.io/github/actions/workflow/status/dagronf/DSFRegex/swift.yml)
 
-## Why
+## Why?
 
 Every time I have to use `NSRegularExpression` in Swift I make the same mistakes over and over regarding ranges and range conversions between `NSRange` and `Range<String.Index>`.
 
 Also, pulling content out using capture groups is tedious and a little error-prone. I wanted to abstract away from of the things that I kept stuffing up.
-
-Compatible with macOS, iOS, tvOS, watchOS and Linux.
 
 ## TL;DR - Show me something!
 
