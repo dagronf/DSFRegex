@@ -18,8 +18,23 @@
 //
 
 import Foundation
-import XCTest
 
-func scenario(_ what: String, _ block: () throws -> Void) throws {
-	XCTAssertNoThrow(try block(), what)
+// MARK: - String extensions
+
+public extension String {
+	/// Return true if the input text contains a match for the pattern, false otherwise
+	/// - Parameters:
+	///   - regex: The regex to perform matches with
+	/// - Returns: true if a match was found, false otherwise
+	func hasMatch(_ regex: DSFRegex) -> Bool {
+		return regex.hasMatch(self)
+	}
+	
+	/// Return all match information for the current string and the specified regex
+	/// - Parameters:
+	///   - regex: The regex to perform matches with
+	/// - Returns: a structure containing all of the matches and capture groups for those matches
+	func matches(for regex: DSFRegex) -> DSFRegex.Matches {
+		return regex.matches(for: self)
+	}
 }

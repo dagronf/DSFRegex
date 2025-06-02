@@ -1,27 +1,20 @@
 //
-//  DSFRegex.swift
+//  Copyright © 2025 Darren Ford. All rights reserved.
 //
-//  Copyright © 2023 Darren Ford. All rights reserved.
+//  MIT license
 //
-//  MIT License
+//  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+//  documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+//  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+//  permit persons to whom the Software is furnished to do so, subject to the following conditions:
 //
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
+//  The above copyright notice and this permission notice shall be included in all copies or substantial
+//  portions of the Software.
 //
-//  The above copyright notice and this permission notice shall be included in all
-//  copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//  SOFTWARE.
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+//  WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+//  OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+//  OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
 import Foundation
@@ -32,6 +25,7 @@ public class DSFRegex {
 	enum RegexError: Error {
 		/// An invalid range was specified (zero length or outside the bounds of the input string)
 		case invalidRange
+		case invalidOffset
 	}
 	
 	private let _regex: NSRegularExpression
@@ -351,10 +345,11 @@ public extension DSFRegex {
 	struct Match {
 		/// The match range within the search text.
 		public let range: Range<String.Index>
-		
 		/// The captures that were found as part of the search
 		public let captures: [Capture]
-		
+		/// The text that the match was found in.
+		private let matchText: String
+
 		init(result: NSTextCheckingResult, in text: String) throws {
 			let matchRange = result.range(at: 0)
 			guard let mr = Range(matchRange, in: text) else {
@@ -374,6 +369,23 @@ public extension DSFRegex {
 				}
 			}
 			self.captures = captures
+			self.matchText = text
+		}
+
+		/// Returns the string for a capture within this match
+		/// - Parameter index: The index of the capture to return
+		/// - Returns: The capture substring
+		///
+		/// Note: No checking is performed to verify that the index is within range
+		public func captureString(for index: Int) -> Substring {
+			assert(index >= 0 && index < self.captures.count)
+			return self.matchText[self.captures[index]]
+		}
+
+		/// Returns all the captures as Substrings of the original matched string
+		/// - Returns: An array containing the capture substrings
+		public func captureStrings() -> [Substring] {
+			self.captures.map { self.matchText[$0] }
 		}
 	}
 }
@@ -390,24 +402,4 @@ public extension DSFRegex {
 private extension DSFRegex.Capture {
 	/// An empty capture object.
 	static var empty = "".startIndex ..< "".endIndex
-}
-
-// MARK: - String extensions
-
-public extension String {
-	/// Return true if the input text contains a match for the pattern, false otherwise
-	/// - Parameters:
-	///   - regex: The regex to perform matches with
-	/// - Returns: true if a match was found, false otherwise
-	func hasMatch(_ regex: DSFRegex) -> Bool {
-		return regex.hasMatch(self)
-	}
-	
-	/// Return all match information for the current string and the specified regex
-	/// - Parameters:
-	///   - regex: The regex to perform matches with
-	/// - Returns: a structure containing all of the matches and capture groups for those matches
-	func matches(for regex: DSFRegex) -> DSFRegex.Matches {
-		return regex.matches(for: self)
-	}
 }

@@ -97,6 +97,10 @@ class ViewController: UIViewController {
 
 		self.textView.becomeFirstResponder()
 
+		guard self.currentMatch < self.searchResults.count else {
+			return
+		}
+
 		let nsRange = NSRange(self.searchResults[self.currentMatch].range, in: self.textView.text)
 
 		self.textView.scrollRangeToVisible(nsRange)
